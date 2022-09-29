@@ -19,6 +19,7 @@ A [sub-package](https://godoc.org/github.com/globalsign/mgo/bson) that implement
 
 MongoDB 4.0 is currently experimental - we would happily accept PRs to help improve support!
 
+MongoDB 5.0 is currently experimental, add SASL authentication support base on github.com/globalsign/mgo;
 ## Changes
 * Fixes attempting to authenticate before every query ([details](https://github.com/go-mgo/mgo/issues/254))
 * Removes bulk update / delete batch size limitations ([details](https://github.com/go-mgo/mgo/issues/288))
@@ -63,7 +64,7 @@ MongoDB 4.0 is currently experimental - we would happily accept PRs to help impr
 * Implement MongoTimestamp ([details](https://github.com/globalsign/mgo/pull/171))
 * Support setting `writeConcern` for `findAndModify` operations ([details](https://github.com/globalsign/mgo/pull/185))
 * Add `ssl` to the dial string options ([details](https://github.com/globalsign/mgo/pull/184))
-
+* Add MongoDB 5.0 SASL authentication support ([details](https://github.com/libi/mgo/commit/2645ec5aa141ff220b0e9f9099b98470c5a3e9c1))
 
 ---
 
