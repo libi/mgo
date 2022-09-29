@@ -34,8 +34,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/globalsign/mgo/bson"
-	"github.com/globalsign/mgo/internal/scram"
+	"github.com/libi/mgo/bson"
+	"github.com/libi/mgo/internal/scram"
 )
 
 type authCmd struct {
@@ -74,6 +74,18 @@ type saslCmd struct {
 	Continue       int    `bson:"saslContinue,omitempty"`
 	ConversationId int    `bson:"conversationId,omitempty"`
 	Mechanism      string `bson:"mechanism,omitempty"`
+	Payload        []byte
+}
+
+type saslStartCmd struct {
+	Start     int    `bson:"saslStart,omitempty"`
+	Mechanism string `bson:"mechanism,omitempty"`
+	Payload   []byte
+}
+
+type saslContinueCmd struct {
+	Continue       int `bson:"saslContinue,omitempty"`
+	ConversationId int `bson:"conversationId,omitempty"`
 	Payload        []byte
 }
 
@@ -309,9 +321,30 @@ func (socket *mongoSocket) loginSASL(cred Credential) error {
 	lock(true)
 	defer lock(false)
 
-	start := 1
-	cmd := saslCmd{}
+	startStep, _, err := sasl.Step([]byte{})
+	if err != nil {
+		return err
+	}
+
+	lock(false)
 	res := saslResult{}
+	startCmd := saslStartCmd{
+		Start:     1,
+		Mechanism: cred.Mechanism,
+		Payload:   startStep,
+	}
+	err = socket.loginRun(cred.Source, &startCmd, &res, func() error {
+		// See the comment on lock for why this is necessary.
+		lock(true)
+		if !res.Ok || res.NotOk {
+			return fmt.Errorf("server returned error on SASL authentication step: %s", res.ErrMsg)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	cmd := saslContinueCmd{}
 	for {
 		payload, done, err := sasl.Step(res.Payload)
 		if err != nil {
@@ -324,14 +357,11 @@ func (socket *mongoSocket) loginSASL(cred Credential) error {
 		}
 		lock(false)
 
-		cmd = saslCmd{
-			Start:          start,
-			Continue:       1 - start,
+		cmd = saslContinueCmd{
+			Continue:       1,
 			ConversationId: res.ConversationId,
-			Mechanism:      cred.Mechanism,
 			Payload:        payload,
 		}
-		start = 0
 		err = socket.loginRun(cred.Source, &cmd, &res, func() error {
 			// See the comment on lock for why this is necessary.
 			lock(true)

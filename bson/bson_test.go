@@ -40,7 +40,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/globalsign/mgo/bson"
+	"github.com/libi/mgo/bson"
 	. "gopkg.in/check.v1"
 )
 

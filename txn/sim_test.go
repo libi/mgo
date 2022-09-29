@@ -5,10 +5,10 @@ import (
 	"math/rand"
 	"time"
 
-	mgo "github.com/globalsign/mgo"
-	"github.com/globalsign/mgo/bson"
-	"github.com/globalsign/mgo/dbtest"
-	"github.com/globalsign/mgo/txn"
+	mgo "github.com/libi/mgo"
+	"github.com/libi/mgo/bson"
+	"github.com/libi/mgo/dbtest"
+	"github.com/libi/mgo/txn"
 	. "gopkg.in/check.v1"
 )
 
